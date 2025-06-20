@@ -1,0 +1,152 @@
+# Format style options described here:
+#     https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+# Configuration for stlab::copy_on_write project
+# Based on user's default settings, updated for clang-format 20.1.7
+
+---
+Language: Cpp
+Standard: c++17
+
+# Basic formatting
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+
+# Access modifiers
+AccessModifierOffset: -4
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignConsecutiveDeclarations:
+  Enabled: false
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignEscapedNewlines: Left
+AlignOperands: Align
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+
+# Allow/disallow single line constructs
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: false
+AllowShortEnumsOnASingleLine: true
+
+# Breaking
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Attach
+BreakInheritanceList: BeforeColon
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializers: BeforeColon
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: false
+
+# Constructor initializers
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 4
+
+# Braced lists
+Cpp11BracedListStyle: true
+
+# Pointer alignment
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+
+# Namespace handling
+FixNamespaceComments: true
+NamespaceIndentation: None
+
+# Include handling
+SortIncludes: CaseSensitive
+IncludeCategories:
+  # Standard library headers
+  - Regex:           '^<[^/]*>$'
+    Priority:        1
+    SortPriority:    1
+  # Standard library subdirectory headers  
+  - Regex:           '^<.*/'
+    Priority:        2
+    SortPriority:    2
+  # Third-party library headers
+  - Regex:           '^"[^/]*"$'
+    Priority:        3
+    SortPriority:    3
+  # Project headers
+  - Regex:           '^".*/'
+    Priority:        4
+    SortPriority:    4
+  # Current directory headers
+  - Regex:           '.*'
+    Priority:        5
+    SortPriority:    5
+
+# Indentation
+IndentCaseLabels: true
+IndentWrappedFunctionNames: true
+IndentPPDirectives: None
+
+# Empty lines
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+# Penalties for line breaking decisions
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 1000
+
+# Comment handling
+ReflowComments: true
+CommentPragmas: '^ IWYU pragma:'
+
+# Spacing
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: Never
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Modern C++ features
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceAfterLogicalNot: false
+
+# Macro handling
+ForEachMacros: 
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+
+# Objective-C (not used in this project, but keeping for compatibility)
+---
+Language: ObjC
+PointerAlignment: Right
+ObjCBlockIndentWidth: 4
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+
+... 

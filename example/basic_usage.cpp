@@ -7,11 +7,11 @@
  * - Copy-on-write semantics when modifying
  * - Identity checking and uniqueness testing
  */
-
 #include <cassert>
 #include <iostream>
-#include <stlab/copy_on_write.hpp>
 #include <string>
+
+#include <stlab/copy_on_write.hpp>
 
 int main() {
     std::cout << "=== stlab::copy_on_write Basic Usage Example ===\n\n";

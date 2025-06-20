@@ -5,6 +5,19 @@
 */
 /**************************************************************************************************/
 
+/*!
+    @file copy_on_write.hpp
+    @brief Copy-on-write wrapper implementation
+
+    This file contains the complete implementation of stlab::copy_on_write, a thread-safe
+    copy-on-write wrapper for any type that models Regular. The implementation uses atomic
+    reference counting and provides lazy copying semantics.
+
+    @author Adobe Systems
+    @version 1.0.0
+    @date 2013-2024
+*/
+
 #ifndef STLAB_COPY_ON_WRITE_HPP
 #define STLAB_COPY_ON_WRITE_HPP
 
@@ -28,13 +41,27 @@
 
     @section usage_sec Basic Usage
 
-    @example basic_usage.cpp
     This example demonstrates the core functionality including efficient copying,
     copy-on-write semantics, identity checking, and swap operations.
+
+    @include basic_usage.cpp
 
     @section license_sec License
 
     Distributed under the Boost Software License, Version 1.0.
+*/
+
+/*!
+    @example basic_usage.cpp
+
+    This example demonstrates the core functionality of stlab::copy_on_write including:
+    - Efficient copying through shared data
+    - Copy-on-write semantics when modifying
+    - Identity checking and uniqueness testing
+    - Swap operations
+
+    The example shows how multiple copy_on_write instances can share the same underlying
+    data until one needs to be modified, at which point a copy is automatically made.
 */
 
 /**************************************************************************************************/
