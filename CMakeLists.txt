@@ -14,6 +14,9 @@ file(
 )
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
+# Enable CPM caching to avoid re-downloading dependencies
+set(CPM_SOURCE_CACHE ${CMAKE_SOURCE_DIR}/.cpm-cache CACHE PATH "Directory to cache CPM packages" FORCE)
+
 # Add doctest dependency for testing
 CPMAddPackage(
     NAME doctest
@@ -72,15 +75,14 @@ if(BUILD_DOCS)
     find_package(Doxygen REQUIRED)
     
     if(DOXYGEN_FOUND)
-        # Download doxygen-awesome-css theme
-        include(FetchContent)
-        FetchContent_Declare(
-            doxygen-awesome-css
-            GIT_REPOSITORY https://github.com/jothepro/doxygen-awesome-css.git
+        # Download doxygen-awesome-css theme via CPM
+        CPMAddPackage(
+            NAME doxygen-awesome-css
+            GITHUB_REPOSITORY jothepro/doxygen-awesome-css
             GIT_TAG v2.3.4
+            DOWNLOAD_ONLY YES
         )
-        FetchContent_MakeAvailable(doxygen-awesome-css)
-        FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
+        set(AWESOME_CSS_DIR ${doxygen-awesome-css_SOURCE_DIR})
         
         # Configure Doxyfile
         set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)

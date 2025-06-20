@@ -66,11 +66,32 @@ assert(!cow_vec.identity(shared_vec)); // Now different objects
 This library uses CMake with CPM for dependency management:
 
 ```bash
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
-ctest  # Run tests
+# Configure and build
+cmake --preset=test
+cmake --build --preset=test
+
+# Run tests
+ctest --preset=test
 ```
+
+### Building Documentation
+
+Documentation is generated using Doxygen with the modern [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css) theme:
+
+```bash
+# Configure with documentation enabled
+cmake --preset=test -DBUILD_DOCS=ON
+
+# Build documentation
+cmake --build --preset=test --target docs
+
+# View documentation (opens in browser)
+open build/test/docs/html/index.html
+```
+
+**Requirements for documentation:**
+- Doxygen 1.9.1 or later
+- Internet connection (for downloading doxygen-awesome-css theme)
 
 ## Requirements
 
@@ -86,6 +107,8 @@ This project uses the following external dependencies:
 | **CMake** | 4.0+ | [Kitware/CMake](https://github.com/Kitware/CMake) | `CMakeLists.txt` line 1 | Update `VERSION` in `cmake_minimum_required()` |
 | **CPM.cmake** | v0.40.8 | [cpm-cmake/CPM.cmake](https://github.com/cpm-cmake/CPM.cmake) | `CMakeLists.txt` lines 9-14 | Update version in download URL and SHA256 hash |
 | **doctest** | v2.4.12 | [doctest/doctest](https://github.com/doctest/doctest) | `CMakeLists.txt` lines 17-23 | Update `GIT_TAG` in `CPMAddPackage` call |
+| **Doxygen** | Latest | [doxygen/doxygen](https://github.com/doxygen/doxygen) | Optional for docs | Install via package manager or from source |
+| **doxygen-awesome-css** | v2.3.4 | [jothepro/doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css) | `CMakeLists.txt` lines 76-81 | Update `GIT_TAG` in `CPMAddPackage` call |
 
 ### Updating Dependencies
 
@@ -112,11 +135,35 @@ To update CPM.cmake:
 3. Update the version in the URL on line 11 of `CMakeLists.txt`
 4. Update the SHA256 hash on line 13 (found in the release assets)
 
+**CPM Caching**: This project enables CPM's caching feature to avoid re-downloading dependencies. 
+The cache is stored in `.cpm-cache/` and is automatically ignored by git. To customize the cache 
+location, set the `CPM_SOURCE_CACHE` environment variable or CMake variable.
+
 #### doctest
 To update doctest:
 1. Visit the [doctest releases page](https://github.com/doctest/doctest/releases)
 2. Find the desired version tag (e.g., `v2.4.12`)
 3. Update the `GIT_TAG` value on line 21 of `CMakeLists.txt`
+
+#### Doxygen
+To install or update Doxygen:
+
+**Option 1: Package Manager**
+- **macOS (Homebrew)**: `brew install doxygen`
+- **Ubuntu/Debian**: `sudo apt update && sudo apt install doxygen`
+- **Windows (Chocolatey)**: `choco install doxygen.install`
+- **Windows (Scoop)**: `scoop install doxygen`
+
+**Option 2: Official Installer**
+1. Visit the [Doxygen download page](https://www.doxygen.nl/download.html)
+2. Download the installer for your platform
+3. Follow the installation instructions
+
+**Verify Installation**: `doxygen --version`
+
+#### doxygen-awesome-css
+This dependency is automatically downloaded via CPM when building documentation. 
+To update the theme version, update the `GIT_TAG` value in the `CPMAddPackage` call in `CMakeLists.txt`.
 
 ## License
 

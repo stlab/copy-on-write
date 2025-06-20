@@ -34,3 +34,6 @@
 .DS_Store
 /build
 compile_commands.json
+
+# CPM cache directory
+.cpm-cache/
