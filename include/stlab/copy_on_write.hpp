@@ -28,25 +28,9 @@
 
     @section usage_sec Basic Usage
 
-    @code{.cpp}
-    #include <stlab/copy_on_write.hpp>
-    #include <string>
-
-    // Create a copy-on-write string
-    stlab::copy_on_write<std::string> cow_str("Hello, World!");
-    auto shared_copy = cow_str;  // Shares the same underlying data
-
-    // Check if they share the same data
-    assert(cow_str.identity(shared_copy));  // true
-    assert(!cow_str.unique());              // false (shared)
-
-    // Modify through write() - triggers copy-on-write
-    cow_str.write() += " Modified!";
-
-    // Now they have different data
-    assert(!cow_str.identity(shared_copy)); // false (different data)
-    assert(cow_str.unique());               // true (now unique)
-    @endcode
+    @example basic_usage.cpp
+    This example demonstrates the core functionality including efficient copying,
+    copy-on-write semantics, identity checking, and swap operations.
 
     @section license_sec License
 

@@ -68,6 +68,11 @@ endfunction()
 # Add test executables
 add_test_executable(copy_on_write_tests)
 
+# Add example programs (also used as tests to ensure they build and run)
+add_executable(basic_usage_example example/basic_usage.cpp)
+target_link_libraries(basic_usage_example PRIVATE stlab::copy-on-write)
+add_test(NAME basic_usage_example COMMAND basic_usage_example)
+
 # Documentation with Doxygen
 option(BUILD_DOCS "Build documentation" OFF)
 
@@ -95,6 +100,7 @@ if(BUILD_DOCS)
         set(INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
         set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
         set(AWESOME_CSS_PATH "${AWESOME_CSS_DIR}")
+        set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         
         configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
         

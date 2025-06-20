@@ -61,6 +61,14 @@ assert(!cow_vec.identity(shared_vec)); // Now different objects
 - `bool identity(const copy_on_write& other) const` - Check if sharing data
 - `void swap(copy_on_write& other)` - Efficient swap
 
+## Examples
+
+The project includes executable examples that demonstrate the library's functionality:
+
+- **`example/basic_usage.cpp`**: Comprehensive demonstration of copy-on-write semantics, identity checking, and swap operations
+
+Examples are automatically built and run as part of the test suite to ensure they remain up-to-date and functional. They are also included in the generated documentation.
+
 ## Building and Testing
 
 This library uses CMake with CPM for dependency management:
