@@ -1,6 +1,17 @@
 # stlab::copy_on_write
 
+[![CI][ci-badge]][ci-link]
+[![Documentation][docs-badge]][docs-link]
+[![License][license-badge]][license-link]
+
 Copy-on-write wrapper for any type.
+
+[ci-badge]: https://github.com/stlab/copy-on-write/workflows/CI/badge.svg
+[ci-link]: https://github.com/stlab/copy-on-write/actions/workflows/ci.yml
+[docs-badge]: https://img.shields.io/badge/docs-github%20pages-blue
+[docs-link]: https://stlab.github.io/copy-on-write/
+[license-badge]: https://img.shields.io/badge/license-BSL%201.0-blue.svg
+[license-link]: https://github.com/stlab/copy-on-write/blob/main/LICENSE
 
 ## Overview
 
@@ -82,6 +93,17 @@ cmake --build --preset=test
 ctest --preset=test
 ```
 
+### Local CI Testing
+
+To test your changes locally before pushing (mimics the CI workflow):
+
+```bash
+# Run the local CI test script
+./scripts/test-ci.sh
+```
+
+This script will clean, configure, build, test, and optionally build documentation to ensure your changes will pass CI.
+
 ### Building Documentation
 
 Documentation is generated using Doxygen with the modern [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css) theme:
@@ -101,10 +123,23 @@ open build/test/docs/html/index.html
 - Doxygen 1.9.1 or later
 - Internet connection (for downloading doxygen-awesome-css theme)
 
+**Online Documentation:**
+The latest documentation is automatically built and deployed to [GitHub Pages](https://stlab.github.io/copy-on-write/) on every push to the main branch.
+
+## Continuous Integration
+
+This project uses GitHub Actions for continuous integration, automatically:
+
+- **Testing**: Builds and tests on Ubuntu (GCC/Clang), macOS (Clang), and Windows (MSVC)
+- **Documentation**: Builds and deploys documentation to GitHub Pages on main branch pushes
+- **Code Coverage**: Generates coverage reports for pull requests and main branch pushes
+
+All pull requests must pass CI checks before merging.
+
 ## Requirements
 
 - C++17 compatible compiler
-- CMake 4.0 or later (for building tests)
+- CMake 3.20 or later (for building tests)
 
 ## Dependencies
 
@@ -112,7 +147,7 @@ This project uses the following external dependencies:
 
 | Dependency | Version | Repository | File Location | Update Instructions |
 |------------|---------|------------|---------------|-------------------|
-| **CMake** | 4.0+ | [Kitware/CMake](https://github.com/Kitware/CMake) | `CMakeLists.txt` line 1 | Update `VERSION` in `cmake_minimum_required()` |
+| **CMake** | 3.20+ | [Kitware/CMake](https://github.com/Kitware/CMake) | `CMakeLists.txt` line 1 | Update `VERSION` in `cmake_minimum_required()` |
 | **CPM.cmake** | v0.40.8 | [cpm-cmake/CPM.cmake](https://github.com/cpm-cmake/CPM.cmake) | `CMakeLists.txt` lines 9-14 | Update version in download URL and SHA256 hash |
 | **doctest** | v2.4.12 | [doctest/doctest](https://github.com/doctest/doctest) | `CMakeLists.txt` lines 17-23 | Update `GIT_TAG` in `CPMAddPackage` call |
 | **Doxygen** | Latest | [doxygen/doxygen](https://github.com/doxygen/doxygen) | Optional for docs | Install via package manager or from source |
