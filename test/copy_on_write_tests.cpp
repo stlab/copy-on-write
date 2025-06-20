@@ -4,6 +4,7 @@
 #include <doctest/doctest.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 using stlab::copy_on_write;

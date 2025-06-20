@@ -63,4 +63,53 @@ function(add_test_executable NAME)
 endfunction()
 
 # Add test executables
-add_test_executable(copy_on_write_tests) 
+add_test_executable(copy_on_write_tests)
+
+# Documentation with Doxygen
+option(BUILD_DOCS "Build documentation" OFF)
+
+if(BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
+    
+    if(DOXYGEN_FOUND)
+        # Download doxygen-awesome-css theme
+        include(FetchContent)
+        FetchContent_Declare(
+            doxygen-awesome-css
+            GIT_REPOSITORY https://github.com/jothepro/doxygen-awesome-css.git
+            GIT_TAG v2.3.4
+        )
+        FetchContent_MakeAvailable(doxygen-awesome-css)
+        FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
+        
+        # Configure Doxyfile
+        set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+        
+        # Set variables for Doxyfile template
+        set(PROJECT_NAME "stlab::copy_on_write")
+        set(PROJECT_BRIEF "Copy-on-write wrapper for any type")
+        set(PROJECT_VERSION "1.0.0")
+        set(INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+        set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        set(AWESOME_CSS_PATH "${AWESOME_CSS_DIR}")
+        
+        configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+        
+        # Add custom target for documentation
+        add_custom_target(docs
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM
+        )
+        
+        # Ensure the output directory exists
+        file(MAKE_DIRECTORY ${OUTPUT_DIR})
+        
+        message(STATUS "Documentation target 'docs' configured")
+        message(STATUS "Run 'cmake --build . --target docs' to generate documentation")
+    else()
+        message(WARNING "Doxygen not found. Documentation will not be built.")
+    endif()
+endif() 

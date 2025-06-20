@@ -1,6 +1,6 @@
 # stlab::copy_on_write
 
-A thread-safe copy-on-write smart pointer implementation for C++17.
+Copy-on-write wrapper for any type.
 
 ## Overview
 

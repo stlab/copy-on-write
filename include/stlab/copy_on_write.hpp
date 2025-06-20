@@ -10,6 +10,51 @@
 
 /**************************************************************************************************/
 
+/*!
+    @mainpage stlab::copy_on_write Documentation
+
+    @section intro_sec Introduction
+
+    The `stlab::copy_on_write<T>` class provides a copy-on-write wrapper for any type
+    that models Regular. This implementation allows multiple instances to share the
+    same underlying data until one of them needs to modify it, at which point a copy is made.
+
+    @section features_sec Key Features
+
+    - **Thread-safe**: Uses atomic reference counting for safe concurrent access
+    - **Header-only**: No compilation required, just include the header
+    - **C++17**: Leverages modern C++ features for clean, efficient implementation
+    - **Standard-compliant**: Follows established C++ idioms and best practices
+
+    @section usage_sec Basic Usage
+
+    @code{.cpp}
+    #include <stlab/copy_on_write.hpp>
+    #include <string>
+
+    // Create a copy-on-write string
+    stlab::copy_on_write<std::string> cow_str("Hello, World!");
+    auto shared_copy = cow_str;  // Shares the same underlying data
+
+    // Check if they share the same data
+    assert(cow_str.identity(shared_copy));  // true
+    assert(!cow_str.unique());              // false (shared)
+
+    // Modify through write() - triggers copy-on-write
+    cow_str.write() += " Modified!";
+
+    // Now they have different data
+    assert(!cow_str.identity(shared_copy)); // false (different data)
+    assert(cow_str.unique());               // true (now unique)
+    @endcode
+
+    @section license_sec License
+
+    Distributed under the Boost Software License, Version 1.0.
+*/
+
+/**************************************************************************************************/
+
 #include <atomic>
 #include <cassert>
 #include <cstddef>
