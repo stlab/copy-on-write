@@ -1,0 +1,15 @@
+{
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "${workspaceFolder}/build/${presetName}",
+    "cmake.buildBeforeRun": false,
+    "clangd.arguments": [
+        "--background-index",
+        "--clang-tidy"
+    ],
+    "clangd.fallbackFlags": [
+        "-std=c++17"
+    ],
+    "testMate.cpp.test.executables": "${workspaceFolder}/build/test/*{test,Test,TEST}*",
+    "testMate.cpp.test.workingDirectory": "${workspaceFolder}",
+    "testMate.cpp.discovery.loadOnStartup": true
+}

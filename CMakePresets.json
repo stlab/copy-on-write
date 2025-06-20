@@ -1,0 +1,57 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Default Configuration",
+            "description": "Default configuration for building the library",
+            "binaryDir": "${sourceDir}/build/default",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "test",
+            "displayName": "Test Configuration",
+            "description": "Configuration for building and running tests",
+            "binaryDir": "${sourceDir}/build/test",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "displayName": "Default Build",
+            "description": "Build the library with default configuration",
+            "configurePreset": "default"
+        },
+        {
+            "name": "test",
+            "displayName": "Build Tests",
+            "description": "Build the library and all tests",
+            "configurePreset": "test"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test",
+            "displayName": "Run All Tests",
+            "description": "Run all unit tests",
+            "configurePreset": "test",
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        }
+    ]
+} 

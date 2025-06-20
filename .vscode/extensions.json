@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        // C++ Language Support
+        "llvm-vs-code-extensions.vscode-clangd",
+        "anysphere.cpptools",
+        "xaver.clang-format",
+        // CMake Support
+        "ms-vscode.cmake-tools",
+        // Testing
+        "matepek.vscode-catch2-test-adapter",
+        "ms-vscode.test-adapter-converter",
+        // Debugging
+        "vadimcn.vscode-lldb",
+        "llvm-vs-code-extensions.lldb-dap"
+    ]
+}
