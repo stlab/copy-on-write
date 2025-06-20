@@ -53,15 +53,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ninja-build
 
-    - name: Install dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install ninja
+    # - name: Install dependencies (macOS)
+    #   if: runner.os == 'macOS'
+    #   run: |
+    #     brew install ninja
 
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       run: |
         choco install ninja
+
+    - name: Set up Visual Studio environment (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Set up compiler environment
       shell: bash
@@ -127,7 +131,7 @@ jobs:
       run: cmake --build build/test --target docs
 
     - name: Setup Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v5
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
@@ -176,7 +180,7 @@ jobs:
           --exclude-throw-branches --xml -o coverage.xml
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         file: ./coverage.xml
         flags: unittests
