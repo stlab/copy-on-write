@@ -46,9 +46,11 @@ public:
     bool empty() const { return _lines.read().empty(); }
 
     void insert(std::string&& line, size_t index) {
+        cerr << "document::insert(line: \"" << line << "\", index: " << index << ")" << endl;
         assert(index <= size() && "index out of bounds");
         _lines.write(
             [&](const std::vector<std::string>& lines) {
+                cerr << "  -> insert: creating copy" << endl;
                 std::vector<std::string> new_lines;
                 // Treat this as an insert at capacity and reserve additional space to ensure we
                 // don't reallocate on the next insert.
@@ -62,15 +64,19 @@ public:
                 return new_lines;
             },
             [&](std::vector<std::string>& lines) {
+                cerr << "  -> insert: modifying in-place" << endl;
                 // If the object is unique, we can modify the underlying data in place
                 lines.insert(lines.begin() + index, line);
             });
+        cerr << "document::insert finished" << endl;
     }
 
     void erase(size_t index) {
+        cerr << "document::erase(index: " << index << ")" << endl;
         assert(index <= size() && "index out of bounds");
         _lines.write(
             [&](const std::vector<std::string>& lines) {
+                cerr << "  -> erase: creating copy" << endl;
                 std::vector<std::string> new_lines;
                 new_lines.reserve(lines.capacity());
                 // Copy the lines before the index
@@ -82,23 +88,30 @@ public:
                 return new_lines;
             },
             [&](std::vector<std::string>& lines) {
+                cerr << "  -> erase: modifying in-place" << endl;
                 // If the object is unique, we can modify the underlying data in place
                 lines.erase(lines.begin() + index);
             });
+        cerr << "document::erase finished" << endl;
     }
 };
 
 } // namespace
 
 int main() {
+    cerr << "--- Test starting ---" << endl;
     document d0;
     d0.insert("Hello, world!", 0);
     d0.insert("After Hello", 1);
 
     document d1(d0);
+    cerr << "Checking initial identity: ";
     assert(begin(d0) == begin(d1));
+    cerr << "OK" << endl;
     d1.insert("Start of d1", 0);
+    cerr << "Checking identity after write: ";
     assert(begin(d0) != begin(d1));
+    cerr << "OK" << endl;
 
     cout << "d0:" << endl;
     for (const auto& line : d0) {
@@ -109,6 +122,6 @@ int main() {
     for (const auto& line : d1) {
         cout << line << endl;
     }
-
+    cerr << "--- Test finished ---" << endl;
     return 0;
 }
