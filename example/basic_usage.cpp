@@ -108,7 +108,9 @@ int main() {
     cerr << "Checking initial identity: ";
     assert(begin(d0) == begin(d1));
     cerr << "OK" << endl;
+    cerr << "main: calling d1.insert..." << endl;
     d1.insert("Start of d1", 0);
+    cerr << "main: d1.insert returned." << endl;
     cerr << "Checking identity after write: ";
     assert(begin(d0) != begin(d1));
     cerr << "OK" << endl;

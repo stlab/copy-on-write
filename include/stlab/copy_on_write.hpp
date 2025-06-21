@@ -81,6 +81,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
+#include <iostream> // For diagnostics
 #include <type_traits>
 #include <utility>
 
@@ -169,8 +170,19 @@ public:
 
     ~copy_on_write() {
         assert(!_self || ((_self->_count > 0) && "FATAL (sparent) : double delete"));
-        if (_self && (_self->_count.fetch_sub(1, std::memory_order_relaxed) == 1)) {
-            delete _self;
+        if (_self) {
+            auto old_count = _self->_count.load(std::memory_order_relaxed);
+            // Using cerr here for diagnostics is not ideal for a library, but necessary for this
+            // issue.
+            std::cerr << "  ~copy_on_write(): _self=" << _self << ", count=" << old_count
+                      << std::endl;
+            if (_self->_count.fetch_sub(1, std::memory_order_release) == 1) {
+                std::cerr << "  ~copy_on_write(): deleting _self=" << _self << std::endl;
+                std::atomic_thread_fence(std::memory_order_acquire);
+                delete _self;
+            }
+        } else {
+            std::cerr << "  ~copy_on_write(): _self=nullptr" << std::endl;
         }
     }
 
