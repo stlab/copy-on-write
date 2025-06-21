@@ -98,7 +98,7 @@ if(BUILD_DOCS)
         set(PROJECT_BRIEF "Copy-on-write wrapper for any type")
         set(PROJECT_VERSION "1.0.0")
         set(INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
-        set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
         set(AWESOME_CSS_PATH "${AWESOME_CSS_DIR}")
         set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         

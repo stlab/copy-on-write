@@ -5,66 +5,110 @@
  * This example demonstrates the key features of copy_on_write:
  * - Efficient copying through shared data
  * - Copy-on-write semantics when modifying
- * - Identity checking and uniqueness testing
  */
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <stlab/copy_on_write.hpp>
 
+using namespace std;
+using namespace stlab;
+
+namespace {
+
+// This is a simple document class that uses copy-on-write to manage its lines.
+class document {
+    stlab::copy_on_write<std::vector<std::string>> _lines;
+
+public:
+    // We can default all the special member functions and still have value semantics.
+    document() = default;
+    // Copy operations are noexcept and only cost an atomic increment.
+    document(const document& other) noexcept = default;
+    document& operator=(const document& other) noexcept = default;
+
+    // Move operations are noexcept and minimal cost.
+    document(document&& other) noexcept = default;
+    document& operator=(document&& other) noexcept = default;
+
+    // We only expose const iterators - exposing non-const iterators may require a copy and
+    // would invalidate any const iterators. This is unusual for a container and may catch
+    // developers off guard.
+
+    using iterator = std::vector<std::string>::const_iterator;
+
+    iterator begin() const { return _lines.read().begin(); }
+    iterator end() const { return _lines.read().end(); }
+    size_t size() const { return _lines.read().size(); }
+    bool empty() const { return _lines.read().empty(); }
+
+    void insert(std::string&& line, size_t index) {
+        assert(index <= size() && "index out of bounds");
+        _lines.write(
+            [&](const std::vector<std::string>& lines) {
+                std::vector<std::string> new_lines;
+                // Treat this as an insert at capacity and reserve additional space to ensure we
+                // don't reallocate on the next insert.
+                new_lines.reserve((lines.size() + 1) * 2);
+                // Copy the lines before the index
+                new_lines.insert(new_lines.begin(), lines.begin(), lines.begin() + index);
+                // Insert the new line
+                new_lines.push_back(line);
+                // Copy the lines after the index
+                new_lines.insert(new_lines.end(), lines.begin() + index, lines.end());
+                return new_lines;
+            },
+            [&](std::vector<std::string>& lines) {
+                // If the object is unique, we can modify the underlying data in place
+                lines.insert(lines.begin() + index, line);
+            });
+    }
+
+    void erase(size_t index) {
+        assert(index <= size() && "index out of bounds");
+        _lines.write(
+            [&](const std::vector<std::string>& lines) {
+                std::vector<std::string> new_lines;
+                new_lines.reserve(lines.capacity());
+                // Copy the lines before the index
+                new_lines.insert(new_lines.begin(), lines.begin(), lines.begin() + index);
+                // Copy the lines after the index
+                if (index != lines.size()) {
+                    new_lines.insert(new_lines.end(), lines.begin() + index + 1, lines.end());
+                }
+                return new_lines;
+            },
+            [&](std::vector<std::string>& lines) {
+                // If the object is unique, we can modify the underlying data in place
+                lines.erase(lines.begin() + index);
+            });
+    }
+};
+
+} // namespace
+
 int main() {
-    std::cout << "=== stlab::copy_on_write Basic Usage Example ===\n\n";
+    document d0;
+    d0.insert("Hello, world!", 0);
+    d0.insert("After Hello", 1);
 
-    // Create a copy-on-write string
-    std::cout << "1. Creating copy-on-write string...\n";
-    stlab::copy_on_write<std::string> cow_str("Hello, World!");
-    std::cout << "   Original: \"" << cow_str.read() << "\"\n";
+    document d1(d0);
+    assert(begin(d0) == begin(d1));
+    d1.insert("Start of d1", 0);
+    assert(begin(d0) != begin(d1));
 
-    // Make a copy - this shares the same underlying data
-    std::cout << "\n2. Making a shared copy...\n";
-    auto shared_copy = cow_str;
-    std::cout << "   Copy: \"" << shared_copy.read() << "\"\n";
+    cout << "d0:" << endl;
+    for (const auto& line : d0) {
+        cout << line << endl;
+    }
 
-    // Check if they share the same data
-    std::cout << "\n3. Checking identity and uniqueness...\n";
-    std::cout << "   Do they share the same data? " << std::boolalpha
-              << cow_str.identity(shared_copy) << "\n";
-    std::cout << "   Is cow_str unique? " << std::boolalpha << cow_str.unique() << "\n";
-    std::cout << "   Is shared_copy unique? " << std::boolalpha << shared_copy.unique() << "\n";
+    cout << "d1:" << endl;
+    for (const auto& line : d1) {
+        cout << line << endl;
+    }
 
-    // Verify they share the same data
-    assert(cow_str.identity(shared_copy)); // true
-    assert(!cow_str.unique());             // false (shared)
-    assert(!shared_copy.unique());         // false (shared)
-
-    // Modify through write() - this triggers copy-on-write
-    std::cout << "\n4. Modifying original (triggers copy-on-write)...\n";
-    cow_str.write() += " Modified!";
-    std::cout << "   Original after modification: \"" << cow_str.read() << "\"\n";
-    std::cout << "   Copy remains unchanged: \"" << shared_copy.read() << "\"\n";
-
-    // Now they have different data
-    std::cout << "\n5. Checking identity after modification...\n";
-    std::cout << "   Do they share the same data? " << std::boolalpha
-              << cow_str.identity(shared_copy) << "\n";
-    std::cout << "   Is cow_str unique? " << std::boolalpha << cow_str.unique() << "\n";
-    std::cout << "   Is shared_copy unique? " << std::boolalpha << shared_copy.unique() << "\n";
-
-    // Verify they now have different data
-    assert(!cow_str.identity(shared_copy)); // false (different data)
-    assert(cow_str.unique());               // true (now unique)
-    assert(shared_copy.unique());           // true (now unique)
-
-    std::cout << "\n6. Demonstrating swap functionality...\n";
-    stlab::copy_on_write<std::string> another_cow("Goodbye, World!");
-    std::cout << "   Before swap: cow_str=\"" << cow_str.read() << "\", another_cow=\""
-              << another_cow.read() << "\"\n";
-
-    swap(cow_str, another_cow);
-    std::cout << "   After swap:  cow_str=\"" << cow_str.read() << "\", another_cow=\""
-              << another_cow.read() << "\"\n";
-
-    std::cout << "\n=== Example completed successfully! ===\n";
     return 0;
 }

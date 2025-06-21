@@ -75,6 +75,29 @@ TEST_CASE("copy_on_write copy semantics") {
         CHECK(cow1.unique());
         CHECK(cow2.unique());
     }
+
+    SUBCASE("write with transform and inplace not unique") {
+        copy_on_write<int> cow1(42);
+        copy_on_write<int> cow2(cow1);
+
+        // increment by different amounts to check that the transform is applied
+        cow2.write([](const int& value) { return value + 1; }, [](int& value) { value += 2; });
+
+        CHECK(*cow1 == 42);
+        CHECK(*cow2 == 43);
+        CHECK_FALSE(cow1.identity(cow2));
+        CHECK(cow1.unique());
+        CHECK(cow2.unique());
+    }
+
+    SUBCASE("write with transform and inplace unique") {
+        copy_on_write<int> cow(42);
+
+        // increment by different amounts to check that the inplace function is applied
+        cow.write([](const int& value) { return value + 1; }, [](int& value) { value += 2; });
+
+        CHECK(*cow == 44);
+    }
 }
 
 TEST_CASE("copy_on_write move semantics") {

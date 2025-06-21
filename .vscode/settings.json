@@ -11,5 +11,7 @@
     ],
     "testMate.cpp.test.executables": "${workspaceFolder}/build/test/*{test,Test,TEST}*",
     "testMate.cpp.test.workingDirectory": "${workspaceFolder}",
-    "testMate.cpp.discovery.loadOnStartup": true
+    "testMate.cpp.discovery.loadOnStartup": true,
+    "cmake.ctest.testExplorerIntegrationEnabled": false,
+    "editor.formatOnSave": true
 }

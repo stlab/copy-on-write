@@ -28,16 +28,28 @@
 
     @section intro_sec Introduction
 
-    The `stlab::copy_on_write<T>` class provides a copy-on-write wrapper for any type
-    that models Regular. This implementation allows multiple instances to share the
-    same underlying data until one of them needs to modify it, at which point a copy is made.
+    The `stlab::copy_on_write<T>` class provides a copy-on-write wrapper for any type that models
+    Regular. This implementation allows multiple instances to share the same underlying data until
+    one of them needs to modify it, at which point a copy is made. The class is not intended to be
+    exposed in a class interface, but rather used as a utility to  construct a type that some or all
+    of the members are copy_on_write. Copy on write is most useful when a type is large and expected
+    to be copied frequently such as part of a transaction system, i.e., implementing undo/redo.
+
+    The `stlab::copy_on_write<T>::write()` operation optionally takes a transform and inplace
+    transform function. For many mutable operations, there is a transform operation that can be
+    applied to perform the copy with the mutation in a more efficient manner.
+
+    Copy-on-write is most useful for structures between 4K and 1M in size. Larger objects can be
+    decomposed into smaller copy-on-write objects, or use a data structure such as a rope that
+    supports has an internal copy-on-write structure. Smaller objects can be more efficient by
+    avoiding heap allocations (such as with small object optimization) and always copying, however
+    if they always heap allocate, they may be more efficient by using copy-on-write.
 
     @section features_sec Key Features
 
     - **Thread-safe**: Uses atomic reference counting for safe concurrent access
     - **Header-only**: No compilation required, just include the header
     - **C++17**: Leverages modern C++ features for clean, efficient implementation
-    - **Standard-compliant**: Follows established C++ idioms and best practices
 
     @section usage_sec Basic Usage
 
@@ -207,6 +219,34 @@ public:
     }
 
     /*!
+        If the object is not unique, the transform is applied to the underlying value to copy it and
+        a reference to the new value is returned. If the object is unique, the inplace function is
+        called with a reference to the underlying value and a reference to the value is returned.
+
+        @param transform A function object that takes a const reference to the underlying value and
+        returns a new value.
+        @param inplace A function object that takes a reference to the underlying value and modifies
+        it in place.
+
+        @return A reference to the underlying value.
+    */
+    template <class Transform, class Inplace>
+    auto write(Transform transform, Inplace inplace) -> element_type& {
+        static_assert(std::is_invocable_r_v<T, Transform, const T&>,
+                      "Transform must be invocable with const T&");
+        static_assert(std::is_invocable_r_v<void, Inplace, T&>,
+                      "Inplace must be invocable with T&");
+
+        if (!unique()) {
+            *this = copy_on_write(transform(read()));
+        } else {
+            inplace(_self->_value);
+        }
+
+        return _self->_value;
+    }
+
+    /*!
         Returns a const reference to the underlying value for read-only access.
     */
     [[nodiscard]] auto read() const noexcept -> const element_type& {
@@ -263,6 +303,10 @@ public:
         std::swap(x._self, y._self);
     }
 
+    /*! @{ */
+    /*!
+        Comparisons can be done with the underlying value or the copy_on_write object.
+    */
     friend inline auto operator<(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
         return !x.identity(y) && (*x < *y);
     }
@@ -334,6 +378,7 @@ public:
     friend inline auto operator!=(const element_type& x, const copy_on_write& y) noexcept -> bool {
         return !(x == y);
     }
+    /*! @} */
 };
 /**************************************************************************************************/
 

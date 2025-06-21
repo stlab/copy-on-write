@@ -23,6 +23,16 @@
                 "BUILD_TESTING": "ON",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
+        },
+        {
+            "name": "docs",
+            "displayName": "Documentation Configuration",
+            "description": "Configuration for building documentation",
+            "binaryDir": "${sourceDir}/build/docs",
+            "inherits": "test",
+            "cacheVariables": {
+                "BUILD_DOCS": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -37,6 +47,13 @@
             "displayName": "Build Tests",
             "description": "Build the library and all tests",
             "configurePreset": "test"
+        },
+        {
+            "name": "docs",
+            "displayName": "Build Documentation",
+            "description": "Build the documentation",
+            "configurePreset": "docs",
+            "targets": [ "docs" ]
         }
     ],
     "testPresets": [
