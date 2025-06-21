@@ -169,8 +169,7 @@ public:
 
     ~copy_on_write() {
         assert(!_self || ((_self->_count > 0) && "FATAL (sparent) : double delete"));
-        if (_self && (_self->_count.fetch_sub(1, std::memory_order_release) == 1)) {
-            std::atomic_thread_fence(std::memory_order_acquire);
+        if (_self && (_self->_count.fetch_sub(1, std::memory_order_relaxed) == 1)) {
             delete _self;
         }
     }

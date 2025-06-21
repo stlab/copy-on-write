@@ -29,6 +29,21 @@ CPMAddPackage(
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Enable AddressSanitizer
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if(ENABLE_ASAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(STATUS "AddressSanitizer enabled for Clang/GCC")
+        add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address)
+    elseif(MSVC)
+        message(STATUS "AddressSanitizer enabled for MSVC")
+        add_compile_options(/fsanitize=address)
+    else()
+        message(WARNING "AddressSanitizer is not supported on this compiler.")
+    endif()
+endif()
+
 # Create symlink to compile_commands.json for clangd
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
     add_custom_target(clangd_compile_commands ALL
