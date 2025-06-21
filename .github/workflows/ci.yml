@@ -1,16 +1,18 @@
 name: CI
 
+# https://github.com/actions/runner-images
+
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     name: Test on ${{ matrix.os }} with ${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -20,18 +22,18 @@ jobs:
             compiler: gcc
             cc: gcc
             cxx: g++
-            
+
           - os: ubuntu-latest
             compiler: clang
             cc: clang
             cxx: clang++
-            
+
           # macOS builds
           - os: macos-latest
             compiler: clang
             cc: clang
             cxx: clang++
-            
+
           # Windows builds
           - os: windows-latest
             compiler: msvc
@@ -39,105 +41,57 @@ jobs:
             cxx: cl
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Set up CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.20.0'
+      - name: Set up compiler environment
+        shell: bash
+        run: |
+          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
 
-    - name: Install dependencies (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build
+      - name: Configure CMake
+        run: cmake --preset test
 
-    # - name: Install dependencies (macOS)
-    #   if: runner.os == 'macOS'
-    #   run: |
-    #     brew install ninja
+      - name: Build
+        run: cmake --build build/test
 
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        choco install ninja
-
-    - name: Set up Visual Studio environment (Windows)
-      if: runner.os == 'Windows'
-      uses: ilammy/msvc-dev-cmd@v1
-
-    - name: Set up compiler environment
-      shell: bash
-      run: |
-        echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
-        echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
-
-    - name: Configure CMake
-      run: cmake --preset test
-
-    - name: Build
-      run: cmake --build build/test
-
-    - name: Run tests
-      run: ctest --test-dir build/test --verbose
-
-    - name: Run example
-      shell: bash
-      run: |
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          if [ -f "./build/test/basic_usage_example.exe" ]; then
-            ./build/test/basic_usage_example.exe
-          else
-            ./build/test/Release/basic_usage_example.exe
-          fi
-        else
-          ./build/test/basic_usage_example
-        fi
+      - name: Run tests
+        run: ctest --test-dir build/test --verbose
 
   docs:
     name: Build and Deploy Documentation
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     permissions:
       contents: read
       pages: write
       id-token: write
-    
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.20.0'
+      - name: Configure CMake with docs
+        run: cmake --preset docs
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen ninja-build
+      - name: Build documentation
+        run: cmake --build build/docs --target docs
 
-    - name: Configure CMake with docs
-      run: cmake --preset test -DBUILD_DOCS=ON
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-    - name: Build documentation
-      run: cmake --build build/test --target docs
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/docs/html
 
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: build/test/docs/html
-
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
