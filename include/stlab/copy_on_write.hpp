@@ -24,26 +24,29 @@
 /**************************************************************************************************/
 
 /*!
-    @mainpage stlab::copy_on_write Documentation
+    @mainpage stlab::copy_on_write
+
+    [![Source
+   Code](https://img.shields.io/badge/Source_Code-blue?logo=github)](https://github.com/stlab/copy-on-write)
 
     @section intro_sec Introduction
 
     The `stlab::copy_on_write<T>` class provides a copy-on-write wrapper for any type that models
     Regular. This implementation allows multiple instances to share the same underlying data until
     one of them needs to modify it, at which point a copy is made. The class is not intended to be
-    exposed in a class interface, but rather used as a utility to  construct a type that some or all
-    of the members are copy_on_write. Copy on write is most useful when a type is large and expected
-    to be copied frequently such as part of a transaction system, i.e., implementing undo/redo.
+    exposed in a class interface, but rather used as a utility to construct a type where some or all
+    of the members are copy_on_write.
 
-    The `stlab::copy_on_write<T>::write()` operation optionally takes a transform and inplace
+    The `stlab::copy_on_write<T>::write()` operation optionally takes a transform and in-place
     transform function. For many mutable operations, there is a transform operation that can be
     applied to perform the copy with the mutation in a more efficient manner.
 
-    Copy-on-write is most useful for structures between 4K and 1M in size. Larger objects can be
-    decomposed into smaller copy-on-write objects, or use a data structure such as a rope that
-    supports has an internal copy-on-write structure. Smaller objects can be more efficient by
-    avoiding heap allocations (such as with small object optimization) and always copying, however
-    if they always heap allocate, they may be more efficient by using copy-on-write.
+    Copy-on-write is most useful for types between 4K and 1M in size and expected to be copied
+    frequently, such as part of a transaction system, i.e., implementing undo/redo. Larger objects
+    can be decomposed into smaller copy-on-write objects or use a data structure such as a rope that
+    has an internal copy-on-write structure. Smaller objects can be more efficient by avoiding heap
+    allocations (such as with small object optimization) and always copying; however, if they always
+    heap allocate, they may be more efficient by using copy-on-write.
 
     @section features_sec Key Features
 
