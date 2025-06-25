@@ -45,7 +45,7 @@ if(ENABLE_ASAN)
 endif()
 
 # Create symlink to compile_commands.json for clangd
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
+if(CMAKE_EXPORT_COMPILE_COMMANDS AND PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
     add_custom_target(clangd_compile_commands ALL
         COMMAND ${CMAKE_COMMAND} -E create_symlink 
             ${CMAKE_BINARY_DIR}/compile_commands.json
