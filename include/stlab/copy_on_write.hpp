@@ -12,10 +12,6 @@
     This file contains the complete implementation of stlab::copy_on_write, a thread-safe
     copy-on-write wrapper for any type that models Regular. The implementation uses atomic
     reference counting and provides lazy copying semantics.
-
-    @author Adobe Systems
-    @version 1.0.0
-    @date 2013-2024
 */
 
 #ifndef STLAB_COPY_ON_WRITE_HPP

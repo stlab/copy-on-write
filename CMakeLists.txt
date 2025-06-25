@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
-project(stlab-copy-on-write)
+project(stlab-copy-on-write
+    VERSION 1.0.2
+    DESCRIPTION "Copy-on-write wrapper for any type"
+)
 
 # Enable testing for this project
 include(CTest)
@@ -65,6 +68,42 @@ target_include_directories(stlab-copy-on-write
         $<INSTALL_INTERFACE:include>
 )
 
+# Generate and install CMake config files
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config-version.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stlab-copy-on-write-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config.cmake"
+    INSTALL_DESTINATION lib/cmake/stlab-copy-on-write
+)
+
+# Installation rules
+install(TARGETS stlab-copy-on-write
+    EXPORT stlab-copy-on-write-targets
+    INCLUDES DESTINATION include
+)
+
+install(DIRECTORY include/
+    DESTINATION include
+)
+
+install(EXPORT stlab-copy-on-write-targets
+    FILE stlab-copy-on-write-targets.cmake
+    NAMESPACE stlab::
+    DESTINATION lib/cmake/stlab-copy-on-write
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config-version.cmake"
+    DESTINATION lib/cmake/stlab-copy-on-write
+)
+
 # Function to add a test executable with all necessary setup
 function(add_test_executable NAME)
     add_executable(${NAME} test/${NAME}.cpp)
@@ -111,7 +150,7 @@ if(BUILD_DOCS)
         # Set variables for Doxyfile template
         set(PROJECT_NAME "stlab::copy_on_write")
         set(PROJECT_BRIEF "Copy-on-write wrapper for any type")
-        set(PROJECT_VERSION "1.0.0")
+        set(PROJECT_VERSION "${PROJECT_VERSION}")
         set(INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
         set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
         set(AWESOME_CSS_PATH "${AWESOME_CSS_DIR}")
