@@ -55,6 +55,26 @@ cmake --build --preset=test
 ctest --preset=test
 ```
 
+### Including in Your Project
+
+To include this library in your project using CPM:
+
+```cmake
+CPMAddPackage(
+    NAME stlab-copy-on-write
+    GITHUB_REPOSITORY stlab/copy-on-write
+    GIT_TAG main # or specify a version tag
+)
+
+target_link_libraries(your_target PRIVATE stlab::copy-on-write)
+```
+
+Make sure you have CPM.cmake set up in your project. The library's headers will be available under the `stlab/` directory, so you can include them like:
+
+```cpp
+#include <stlab/copy_on_write.hpp>
+```
+
 ### Building Documentation
 
 Documentation is generated using Doxygen with the modern [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css) theme:
