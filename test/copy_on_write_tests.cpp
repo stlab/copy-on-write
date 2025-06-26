@@ -14,6 +14,8 @@ TEST_CASE("copy_on_write basic construction") {
         copy_on_write<int> cow;
         CHECK(*cow == 0); // default constructed int is 0
         // Note: default constructed instances share a static model, so they're not unique
+        copy_on_write<int> cow2;
+        CHECK(cow.identity(cow2));
     }
 
     SUBCASE("value construction") {
