@@ -69,7 +69,7 @@ CPMAddPackage(
 target_link_libraries(your_target PRIVATE stlab::copy-on-write)
 ```
 
-Make sure you have CPM.cmake set up in your project. The library's headers will be available under the `stlab/` directory, so you can include them like:
+The library's headers will be available under the `stlab/` directory:
 
 ```cpp
 #include <stlab/copy_on_write.hpp>

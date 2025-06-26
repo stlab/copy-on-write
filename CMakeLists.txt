@@ -28,16 +28,8 @@ add_library(stlab-copy-on-write INTERFACE)
 add_library(stlab::copy-on-write ALIAS stlab-copy-on-write)
 
 # Set include directories and requirements
-target_include_directories(stlab-copy-on-write
-    INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-
-target_compile_features(stlab-copy-on-write
-    INTERFACE
-        cxx_std_17
-)
+target_include_directories(stlab-copy-on-write INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(stlab-copy-on-write INTERFACE cxx_std_17)
 
 # Generate and install CMake config files
 include(CMakePackageConfigHelpers)
