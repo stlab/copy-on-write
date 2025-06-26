@@ -80,7 +80,6 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
-#include <iostream> // For diagnostics
 #include <type_traits>
 #include <utility>
 
@@ -121,6 +120,11 @@ class copy_on_write {
     using disable_copy_assign =
         std::enable_if_t<!std::is_same_v<std::decay_t<U>, copy_on_write>, copy_on_write&>;
 
+    auto default_model() noexcept(std::is_nothrow_constructible_v<T>) -> model* {
+        static model default_s;
+        return &default_s;
+    }
+
 public:
     /*!
         @deprecated Use element_type instead. The type of value stored.
@@ -135,7 +139,12 @@ public:
     /*!
         Default constructs the wrapped value.
     */
-    copy_on_write() noexcept(std::is_nothrow_constructible_v<T>) : _self(new model()) {}
+    copy_on_write() noexcept(std::is_nothrow_constructible_v<T>) {
+        _self = default_model();
+
+        // coverity[useless_call]
+        _self->_count.fetch_add(1, std::memory_order_relaxed);
+    }
 
     /*!
         Constructs a new instance by forwarding arguments to the wrapped value constructor.
@@ -171,6 +180,9 @@ public:
         assert(!_self || ((_self->_count > 0) && "FATAL (sparent) : double delete"));
         if (_self && (_self->_count.fetch_sub(1, std::memory_order_release) == 1)) {
             std::atomic_thread_fence(std::memory_order_acquire);
+            if constexpr (std::is_default_constructible_v<element_type>) {
+                assert(_self != default_model());
+            }
             delete _self;
         }
     }
