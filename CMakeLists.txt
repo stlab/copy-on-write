@@ -6,21 +6,13 @@ project(stlab-copy-on-write
 
 # Enable testing for this project
 include(CTest)
-enable_testing()
 
 # Only download CPM if building tests or examples
 if(PROJECT_IS_TOP_LEVEL)
-    # download CPM.cmake
-    file(
-        DOWNLOAD
-        https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.8/CPM.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake
-        EXPECTED_HASH SHA256=78ba32abdf798bc616bab7c73aac32a17bbd7b06ad9e26a6add69de8f3ae4791
-    )
-    include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
-
-    # Enable CPM caching to avoid re-downloading dependencies
+    # Enable CPM caching to avoid re-downloading dependencies (including CPM.cmake)
     set(CPM_SOURCE_CACHE ${CMAKE_SOURCE_DIR}/.cpm-cache CACHE PATH "Directory to cache CPM packages" FORCE)
+
+    include(cmake/CPM.cmake)
 endif()
 
 # Create the header-only library target
@@ -70,18 +62,16 @@ install(FILES
     DESTINATION lib/cmake/stlab-copy-on-write
 )
 
-# Only build tests and examples if this is the top-level project
+# Build tests and examples (first top-level guard already active, second removed for brevity)
 if(PROJECT_IS_TOP_LEVEL)
     # Add doctest dependency for testing
     CPMAddPackage(
-        NAME doctest
-        GITHUB_REPOSITORY doctest/doctest
-        GIT_TAG v2.4.12
+        URI gh:doctest/doctest@2.4.12
         OPTIONS "DOCTEST_WITH_TESTS OFF"
     )
 
     # Create symlink to compile_commands.json for clangd
-    if(CMAKE_EXPORT_COMPILE_COMMANDS AND PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
+    if(CMAKE_EXPORT_COMPILE_COMMANDS)
         add_custom_target(clangd_compile_commands ALL
             COMMAND ${CMAKE_COMMAND} -E create_symlink 
                 ${CMAKE_BINARY_DIR}/compile_commands.json
@@ -122,9 +112,7 @@ if(PROJECT_IS_TOP_LEVEL)
         if(DOXYGEN_FOUND)
             # Download doxygen-awesome-css theme via CPM
             CPMAddPackage(
-                NAME doxygen-awesome-css
-                GITHUB_REPOSITORY jothepro/doxygen-awesome-css
-                GIT_TAG v2.3.4
+                URI gh:jothepro/doxygen-awesome-css@2.3.4
                 DOWNLOAD_ONLY YES
             )
             set(AWESOME_CSS_DIR ${doxygen-awesome-css_SOURCE_DIR})
@@ -136,11 +124,11 @@ if(PROJECT_IS_TOP_LEVEL)
             # Set variables for Doxyfile template
             set(PROJECT_NAME "stlab::copy_on_write")
             set(PROJECT_BRIEF "Copy-on-write wrapper for any type")
-            set(PROJECT_VERSION "${PROJECT_VERSION}")
+            # PROJECT_VERSION is already defined by CMake; no need to re-assign
             set(INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
             set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
             set(AWESOME_CSS_PATH "${AWESOME_CSS_DIR}")
-            set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            # CMAKE_SOURCE_DIR is already set by CMake; avoid redundant shadowing
             
             configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
             
