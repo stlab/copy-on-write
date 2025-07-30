@@ -62,13 +62,10 @@ install(FILES
     DESTINATION lib/cmake/stlab-copy-on-write
 )
 
-# Build tests and examples (first top-level guard already active, second removed for brevity)
+# Build tests and examples
 if(PROJECT_IS_TOP_LEVEL)
     # Add doctest dependency for testing
-    CPMAddPackage(
-        URI gh:doctest/doctest@2.4.12
-        OPTIONS "DOCTEST_WITH_TESTS OFF"
-    )
+    CPMAddPackage("gh:doctest/doctest@2.4.12")
 
     # Create symlink to compile_commands.json for clangd
     if(CMAKE_EXPORT_COMPILE_COMMANDS)
