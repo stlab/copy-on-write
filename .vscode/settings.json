@@ -13,5 +13,6 @@
     "testMate.cpp.test.workingDirectory": "${workspaceFolder}",
     "testMate.cpp.discovery.loadOnStartup": true,
     "cmake.ctest.testExplorerIntegrationEnabled": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "taskManager.exclude": "\\.cpm-cache.*"
 }
