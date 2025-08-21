@@ -22,45 +22,8 @@ add_library(stlab::copy-on-write ALIAS stlab-copy-on-write)
 # Set include directories and requirements
 target_include_directories(stlab-copy-on-write INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
 )
 target_compile_features(stlab-copy-on-write INTERFACE cxx_std_17)
-
-# Generate and install CMake config files
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config-version.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stlab-copy-on-write-config.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config.cmake"
-    INSTALL_DESTINATION lib/cmake/stlab-copy-on-write
-)
-
-# Installation rules
-install(TARGETS stlab-copy-on-write
-    EXPORT stlab-copy-on-write-targets
-    INCLUDES DESTINATION include
-)
-
-install(DIRECTORY include/
-    DESTINATION include
-)
-
-install(EXPORT stlab-copy-on-write-targets
-    FILE stlab-copy-on-write-targets.cmake
-    NAMESPACE stlab::
-    DESTINATION lib/cmake/stlab-copy-on-write
-)
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/stlab-copy-on-write-config-version.cmake"
-    DESTINATION lib/cmake/stlab-copy-on-write
-)
 
 # Build tests and examples
 if(PROJECT_IS_TOP_LEVEL)
