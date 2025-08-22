@@ -231,31 +231,51 @@ public:
     }
 
     /*!
-        If the object is not unique, the transform is applied to the underlying value to copy it and
-        a reference to the new value is returned. If the object is unique, the inplace function is
-        called with a reference to the underlying value and a reference to the value is returned.
+        If the object is unique, the inplace function is called with a reference to the underlying
+        value and a reference to the value is returned. If the object is not unique, the transform
+        is applied to the underlying value to copy it and a reference to the new value is returned.
 
+        @param inplace A function object that takes a reference to the underlying value and modifies
+        it in place.
         @param transform A function object that takes a const reference to the underlying value and
         returns a new value.
+
+        @return A reference to the underlying value.
+    */
+    template <class Inplace, class Transform>
+    auto write(Inplace inplace, Transform transform) -> element_type& {
+        static_assert(std::is_invocable_r_v<void, Inplace, T&>,
+                      "Inplace must be invocable with T&");
+        static_assert(std::is_invocable_r_v<T, Transform, const T&>,
+                      "Transform must be invocable with const T&");
+
+        if (unique()) {
+            inplace(_self->_value);
+        } else {
+            *this = copy_on_write(transform(read()));
+        }
+
+        return _self->_value;
+    }
+
+    /*!
+        If the object is unique, the inplace function is called with a reference to the underlying
+        value and a reference to the value is returned. If the object is not unique, the underlying
+        value is copied, the inplace function is called with a reference to the copy, and a
+        reference to the copy is returned.
+
         @param inplace A function object that takes a reference to the underlying value and modifies
         it in place.
 
         @return A reference to the underlying value.
     */
-    template <class Transform, class Inplace>
-    auto write(Transform transform, Inplace inplace) -> element_type& {
-        static_assert(std::is_invocable_r_v<T, Transform, const T&>,
-                      "Transform must be invocable with const T&");
-        static_assert(std::is_invocable_r_v<void, Inplace, T&>,
-                      "Inplace must be invocable with T&");
-
-        if (!unique()) {
-            *this = copy_on_write(transform(read()));
-        } else {
-            inplace(_self->_value);
-        }
-
-        return _self->_value;
+    template <class Inplace>
+    auto write(Inplace inplace) -> element_type& {
+        return write(inplace, [=](const element_type& x) {
+            element_type tmp = x;
+            inplace(tmp);
+            return tmp;
+        });
     }
 
     /*!

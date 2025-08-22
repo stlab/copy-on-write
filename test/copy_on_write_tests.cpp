@@ -83,7 +83,7 @@ TEST_CASE("copy_on_write copy semantics") {
         copy_on_write<int> cow2(cow1);
 
         // increment by different amounts to check that the transform is applied
-        cow2.write([](const int& value) { return value + 1; }, [](int& value) { value += 2; });
+        cow2.write([](int& value) { value += 2; }, [](const int& value) { return value + 1; });
 
         CHECK(*cow1 == 42);
         CHECK(*cow2 == 43);
@@ -96,7 +96,7 @@ TEST_CASE("copy_on_write copy semantics") {
         copy_on_write<int> cow(42);
 
         // increment by different amounts to check that the inplace function is applied
-        cow.write([](const int& value) { return value + 1; }, [](int& value) { value += 2; });
+        cow.write([](int& value) { value += 2; }, [](const int& value) { return value + 1; });
 
         CHECK(*cow == 44);
     }
