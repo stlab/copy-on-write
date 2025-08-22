@@ -19,7 +19,9 @@ Copy-on-write wrapper for any type.
 The latest documentation is automatically built and deployed to [GitHub Pages](https://stlab.github.io/copy-on-write/) on every push to the main branch.
 
 **Version Management:**
-The project version is maintained in a single location in the `project()` command at the top of `CMakeLists.txt`. When creating a new release:
+The project version is maintained in a single location in the `project()` command at the top of
+`CMakeLists.txt`. When creating a new release:
+
 1. Update the version in `project(stlab-copy-on-write VERSION X.Y.Z)`
 2. The version will automatically propagate to:
    - CMake package configuration
