@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include <stlab/copy_on_write.hpp>
 
@@ -62,13 +63,11 @@ public:
     }
 
     void erase(size_t index) {
-        assert(index <= size() && "index out of bounds");
+        assert(index < size() && "index out of bounds");
         _lines.write(
             [&](const std::vector<std::string>& lines) {
                 std::vector<std::string> new_lines = lines;
-                if (index < lines.size()) {
-                    new_lines.erase(new_lines.begin() + index);
-                }
+                new_lines.erase(new_lines.begin() + index);
                 return new_lines;
             },
             [&](std::vector<std::string>& lines) {
