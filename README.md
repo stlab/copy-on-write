@@ -18,6 +18,10 @@ Copy-on-write wrapper for any type.
 **Online Documentation:**
 The latest documentation is automatically built and deployed to [GitHub Pages](https://stlab.github.io/copy-on-write/) on every push to the main branch.
 
+**Quick Help:**
+- [Frequently Asked Questions](docs/FAQ.md) - Common questions and usage patterns
+- Looking for "property" features? See the FAQ for clarification on the available access methods
+
 **Version Management:**
 The project version is maintained in a single location in the `project()` command at the top of
 `CMakeLists.txt`. When creating a new release:
@@ -35,12 +39,47 @@ The project version is maintained in a single location in the `project()` comman
 - **Thread-safe**: Uses atomic reference counting for safe concurrent access
 - **Header-only**: No compilation required, just include the header
 - **C++17**: Leverages modern C++ features for clean, efficient implementation
+- **Comprehensive access methods**: Multiple ways to access wrapped values
+
+### Access Methods
+
+The library provides several methods to access the wrapped value:
+
+#### Read Access (const)
+```cpp
+stlab::copy_on_write<MyClass> cow(value);
+
+// Multiple equivalent ways to read:
+const auto& ref1 = cow.read();      // Explicit read method
+const auto& ref2 = *cow;            // Dereference operator  
+const auto& ref3 = cow;             // Implicit conversion
+auto result = cow->method();        // Arrow operator
+```
+
+#### Write Access (mutable)
+```cpp
+// Simple write access (triggers copy if shared):
+cow.write().modify_something();
+
+// Advanced write with transform functions:
+cow.write(
+    [](const MyClass& obj) { /* transform function */ return modified; },
+    [](MyClass& obj) { /* in-place modification */ }
+);
+```
+
+#### Introspection
+```cpp
+bool is_unique = cow.unique();           // Check if sole owner
+bool same_data = cow1.identity(cow2);    // Check if sharing data
+```
 
 ## Examples
 
 The project includes executable examples that demonstrate the library's functionality:
 
 - **`example/basic_usage.cpp`**: Comprehensive demonstration of copy-on-write semantics, identity checking, and swap operations
+- **`example/access_methods_demo.cpp`**: Complete guide to all access methods available (answers the "New Property" question)
 
 Examples are automatically built and run as part of the test suite to ensure they remain up-to-date and functional. They are also included in the generated documentation.
 

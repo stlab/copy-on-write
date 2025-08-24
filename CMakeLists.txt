@@ -63,6 +63,10 @@ if(PROJECT_IS_TOP_LEVEL)
     target_link_libraries(basic_usage_example PRIVATE stlab::copy-on-write)
     add_test(NAME basic_usage_example COMMAND basic_usage_example)
 
+    add_executable(access_methods_demo example/access_methods_demo.cpp)
+    target_link_libraries(access_methods_demo PRIVATE stlab::copy-on-write)
+    add_test(NAME access_methods_demo COMMAND access_methods_demo)
+
     # Documentation with Doxygen
     option(BUILD_DOCS "Build documentation" OFF)
 

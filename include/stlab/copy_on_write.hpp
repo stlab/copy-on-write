@@ -75,6 +75,19 @@
     data until one needs to be modified, at which point a copy is automatically made.
 */
 
+/*!
+    @example access_methods_demo.cpp
+
+    This example demonstrates all the available access methods in stlab::copy_on_write:
+    - Read access: read(), operator*(), operator->(), implicit conversion
+    - Write access: write() method with copy-on-write semantics  
+    - Introspection: unique() and identity() methods
+    - Advanced write operations with transform functions
+
+    This addresses common questions about "property" access - there is no separate
+    property feature, but multiple flexible access methods are provided.
+*/
+
 /**************************************************************************************************/
 
 #include <atomic>
