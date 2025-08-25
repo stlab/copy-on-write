@@ -114,13 +114,6 @@ class copy_on_write {
 
     model* _self;
 
-    template <class U>
-    using disable_copy = std::enable_if_t<!std::is_same_v<std::decay_t<U>, copy_on_write>>*;
-
-    template <typename U>
-    using disable_copy_assign =
-        std::enable_if_t<!std::is_same_v<std::decay_t<U>, copy_on_write>, copy_on_write&>;
-
     auto default_model() noexcept(std::is_nothrow_constructible_v<T>) -> model* {
         static model default_s;
         return &default_s;
@@ -150,8 +143,8 @@ public:
     /*!
         Constructs a new instance by forwarding arguments to the wrapped value constructor.
     */
-    template <class U>
-    copy_on_write(U&& x, disable_copy<U> = nullptr) : _self(new model(std::forward<U>(x))) {}
+    template <class U> requires(!std::is_same_v<std::decay_t<U>, copy_on_write>)
+    copy_on_write(U&& x) : _self(new model(std::forward<U>(x))) {}
 
     /*!
         Constructs a new instance by forwarding multiple arguments to the wrapped value constructor.
@@ -209,8 +202,8 @@ public:
     /*!
         Assigns a new value to the wrapped object, optimizing for in-place assignment when unique.
     */
-    template <class U>
-    auto operator=(U&& x) -> disable_copy_assign<U> {
+    template <class U> requires(!std::is_same_v<std::decay_t<U>, copy_on_write>)
+    auto operator=(U&& x) -> copy_on_write& {
         if (_self && unique()) {
             _self->_value = std::forward<U>(x);
             return *this;
