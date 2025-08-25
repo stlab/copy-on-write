@@ -99,7 +99,7 @@ namespace stlab {
 
     This class is thread safe and supports types that model Moveable.
 */
-template <std::regular T>
+template <std::semiregular T>
 class copy_on_write {
     struct model {
         std::atomic<std::size_t> _count{1};
@@ -312,11 +312,17 @@ public:
     /*!
         Comparisons can be done with the underlying value or the copy_on_write object.
     */
-    friend inline auto operator==(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
+    friend auto operator==(const copy_on_write& x, const copy_on_write& y)
+        noexcept(noexcept(*x == *y))
+        requires std::equality_comparable<T>
+    {
         return x.identity(y) || (*x == *y);
     }
 
-    friend inline auto operator==(const copy_on_write& x, const element_type& y) noexcept -> bool {
+    friend auto operator==(const copy_on_write& x, const element_type& y)
+        noexcept(noexcept(*x == y))
+        requires std::equality_comparable<T>
+    {
         return *x == y;
     }
 
