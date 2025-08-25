@@ -80,6 +80,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
@@ -97,7 +98,7 @@ namespace stlab {
 
     This class is thread safe and supports types that model Moveable.
 */
-template <typename T> // T models Regular
+template <std::regular T>
 class copy_on_write {
     struct model {
         std::atomic<std::size_t> _count{1};

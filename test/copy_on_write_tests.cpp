@@ -230,8 +230,9 @@ TEST_CASE("copy_on_write swap") {
 TEST_CASE("copy_on_write with complex types") {
     struct TestStruct {
         std::string name;
-        int value;
+        int value{0};
 
+        TestStruct() = default;
         TestStruct(std::string n, int v) : name(std::move(n)), value(v) {}
 
         bool operator==(const TestStruct& other) const {
