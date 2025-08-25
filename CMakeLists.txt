@@ -23,7 +23,7 @@ add_library(stlab::copy-on-write ALIAS stlab-copy-on-write)
 target_include_directories(stlab-copy-on-write INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-target_compile_features(stlab-copy-on-write INTERFACE cxx_std_17)
+target_compile_features(stlab-copy-on-write INTERFACE cxx_std_20)
 
 # Build tests and examples
 if(PROJECT_IS_TOP_LEVEL)
