@@ -80,6 +80,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
+#include <compare>
 #include <concepts>
 #include <type_traits>
 #include <utility>
@@ -311,54 +312,6 @@ public:
     /*!
         Comparisons can be done with the underlying value or the copy_on_write object.
     */
-    friend inline auto operator<(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !x.identity(y) && (*x < *y);
-    }
-
-    friend inline auto operator<(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return *x < y;
-    }
-
-    friend inline auto operator<(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return x < *y;
-    }
-
-    friend inline auto operator>(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator>(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator>(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator<=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator<=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator<=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator>=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(x < y);
-    }
-
-    friend inline auto operator>=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(x < y);
-    }
-
-    friend inline auto operator>=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(x < y);
-    }
-
     friend inline auto operator==(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
         return x.identity(y) || (*x == *y);
     }
@@ -367,20 +320,21 @@ public:
         return *x == y;
     }
 
-    friend inline auto operator==(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return x == *y;
+    friend auto operator<=>(copy_on_write const& x, copy_on_write const& y)
+        noexcept(noexcept(*x <=> *y))
+        requires std::three_way_comparable<T>
+    {
+        if (x.identity(y)) {
+            return std::strong_ordering::equal;
+        }
+        return *x <=> *y;
     }
 
-    friend inline auto operator!=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(x == y);
-    }
-
-    friend inline auto operator!=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(x == y);
-    }
-
-    friend inline auto operator!=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(x == y);
+    friend auto operator<=>(copy_on_write const& x, element_type const& y)
+        noexcept(noexcept(*x <=> y))
+        requires std::three_way_comparable<T>
+    {
+        return *x <=> y;
     }
     /*! @} */
 };
