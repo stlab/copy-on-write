@@ -89,6 +89,13 @@
 
 namespace stlab {
 
+template <class F, class T>
+concept action = std::invocable<F, T&> && std::same_as<std::invoke_result_t<F, T&>, void>;
+
+template <class F, class T>
+concept transformation =
+    std::invocable<F, const T&> && std::same_as<std::invoke_result_t<F, const T&>, T>;
+
 /**************************************************************************************************/
 
 /*!
@@ -235,13 +242,8 @@ public:
 
         @return A reference to the underlying value.
     */
-    template <class Transform, class Inplace>
+    template <transformation<T> Transform, action<T> Inplace>
     auto write(Transform transform, Inplace inplace) -> element_type& {
-        static_assert(std::is_invocable_r_v<T, Transform, const T&>,
-                      "Transform must be invocable with const T&");
-        static_assert(std::is_invocable_r_v<void, Inplace, T&>,
-                      "Inplace must be invocable with T&");
-
         if (!unique()) {
             *this = copy_on_write(transform(read()));
         } else {
