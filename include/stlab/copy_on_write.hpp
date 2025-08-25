@@ -235,6 +235,47 @@ public:
         a reference to the new value is returned. If the object is unique, the inplace function is
         called with a reference to the underlying value and a reference to the value is returned.
 
+        @param inplace A function object that takes a reference to the underlying value and modifies
+        it in place.
+
+        @return A reference to the underlying value.
+    */
+    template <action<T> Inplace>
+    auto write(Inplace inplace) -> element_type& {
+        if (!unique()) {
+            *this = copy_on_write(read());
+        }
+
+        inplace(_self->_value);
+        return _self->_value;
+    }
+
+    /*!
+        If the object is not unique, the transform is applied to the underlying value to copy it and
+        a reference to the new value is returned. If the object is unique, the inplace function is
+        called with a reference to the underlying value and a reference to the value is returned.
+
+        @param transform A function object that takes a const reference to the underlying value and
+        returns a new value.
+
+        @return A reference to the underlying value.
+    */
+    template <transformation<T> Transform>
+    auto write(Transform transform) -> element_type& {
+        if (!unique()) {
+            *this = copy_on_write(transform(read()));
+        } else {
+            _self->_value = transform(_self->_value);
+        }
+
+        return _self->_value;
+    }
+
+    /*!
+        If the object is not unique, the transform is applied to the underlying value to copy it and
+        a reference to the new value is returned. If the object is unique, the inplace function is
+        called with a reference to the underlying value and a reference to the value is returned.
+
         @param transform A function object that takes a const reference to the underlying value and
         returns a new value.
         @param inplace A function object that takes a reference to the underlying value and modifies
