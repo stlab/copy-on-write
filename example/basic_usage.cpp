@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include <stlab/copy_on_write.hpp>
 
@@ -49,32 +50,16 @@ public:
 
     void insert(std::string&& line, size_t index) {
         assert(index <= size() && "index out of bounds");
-        _lines.write(
-            [&](const std::vector<std::string>& lines) {
-                std::vector<std::string> new_lines = lines;
-                new_lines.insert(new_lines.begin() + index, std::move(line));
-                return new_lines;
-            },
-            [&](std::vector<std::string>& lines) {
-                // If the object is unique, we can modify the underlying data in place
-                lines.insert(lines.begin() + index, std::move(line));
-            });
+        _lines.write([&](std::vector<std::string>& lines) {
+            lines.insert(lines.begin() + index, std::move(line));
+        });
     }
 
     void erase(size_t index) {
-        assert(index <= size() && "index out of bounds");
-        _lines.write(
-            [&](const std::vector<std::string>& lines) {
-                std::vector<std::string> new_lines = lines;
-                if (index < lines.size()) {
-                    new_lines.erase(new_lines.begin() + index);
-                }
-                return new_lines;
-            },
-            [&](std::vector<std::string>& lines) {
-                // If the object is unique, we can modify the underlying data in place
-                lines.erase(lines.begin() + index);
-            });
+        assert(index < size() && "index out of bounds");
+        _lines.write([&](std::vector<std::string>& lines) {
+            lines.erase(lines.begin() + index);
+        });
     }
 };
 

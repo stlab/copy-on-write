@@ -80,12 +80,21 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
+#include <compare>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 
 /**************************************************************************************************/
 
 namespace stlab {
+
+template <class F, class T>
+concept action = std::invocable<F, T&> && std::same_as<std::invoke_result_t<F, T&>, void>;
+
+template <class F, class T>
+concept transformation =
+    std::invocable<F, const T&> && std::same_as<std::invoke_result_t<F, const T&>, T>;
 
 /**************************************************************************************************/
 
@@ -97,7 +106,7 @@ namespace stlab {
 
     This class is thread safe and supports types that model Moveable.
 */
-template <typename T> // T models Regular
+template <std::semiregular T>
 class copy_on_write {
     struct model {
         std::atomic<std::size_t> _count{1};
@@ -112,13 +121,6 @@ class copy_on_write {
     };
 
     model* _self;
-
-    template <class U>
-    using disable_copy = std::enable_if_t<!std::is_same_v<std::decay_t<U>, copy_on_write>>*;
-
-    template <typename U>
-    using disable_copy_assign =
-        std::enable_if_t<!std::is_same_v<std::decay_t<U>, copy_on_write>, copy_on_write&>;
 
     auto default_model() noexcept(std::is_nothrow_constructible_v<T>) -> model* {
         static model default_s;
@@ -149,8 +151,8 @@ public:
     /*!
         Constructs a new instance by forwarding arguments to the wrapped value constructor.
     */
-    template <class U>
-    copy_on_write(U&& x, disable_copy<U> = nullptr) : _self(new model(std::forward<U>(x))) {}
+    template <class U> requires(!std::is_same_v<std::decay_t<U>, copy_on_write>)
+    copy_on_write(U&& x) : _self(new model(std::forward<U>(x))) {}
 
     /*!
         Constructs a new instance by forwarding multiple arguments to the wrapped value constructor.
@@ -180,9 +182,7 @@ public:
         assert(!_self || ((_self->_count > 0) && "FATAL (sparent) : double delete"));
         if (_self && (_self->_count.fetch_sub(1, std::memory_order_release) == 1)) {
             std::atomic_thread_fence(std::memory_order_acquire);
-            if constexpr (std::is_default_constructible_v<element_type>) {
-                assert(_self != default_model());
-            }
+            assert(_self != default_model());
             delete _self;
         }
     }
@@ -208,8 +208,8 @@ public:
     /*!
         Assigns a new value to the wrapped object, optimizing for in-place assignment when unique.
     */
-    template <class U>
-    auto operator=(U&& x) -> disable_copy_assign<U> {
+    template <class U> requires(!std::is_same_v<std::decay_t<U>, copy_on_write>)
+    auto operator=(U&& x) -> copy_on_write& {
         if (_self && unique()) {
             _self->_value = std::forward<U>(x);
             return *this;
@@ -235,6 +235,47 @@ public:
         a reference to the new value is returned. If the object is unique, the inplace function is
         called with a reference to the underlying value and a reference to the value is returned.
 
+        @param inplace A function object that takes a reference to the underlying value and modifies
+        it in place.
+
+        @return A reference to the underlying value.
+    */
+    template <action<T> Inplace>
+    auto write(Inplace inplace) -> element_type& {
+        if (!unique()) {
+            *this = copy_on_write(read());
+        }
+
+        inplace(_self->_value);
+        return _self->_value;
+    }
+
+    /*!
+        If the object is not unique, the transform is applied to the underlying value to copy it and
+        a reference to the new value is returned. If the object is unique, the inplace function is
+        called with a reference to the underlying value and a reference to the value is returned.
+
+        @param transform A function object that takes a const reference to the underlying value and
+        returns a new value.
+
+        @return A reference to the underlying value.
+    */
+    template <transformation<T> Transform>
+    auto write(Transform transform) -> element_type& {
+        if (!unique()) {
+            *this = copy_on_write(transform(read()));
+        } else {
+            _self->_value = transform(_self->_value);
+        }
+
+        return _self->_value;
+    }
+
+    /*!
+        If the object is not unique, the transform is applied to the underlying value to copy it and
+        a reference to the new value is returned. If the object is unique, the inplace function is
+        called with a reference to the underlying value and a reference to the value is returned.
+
         @param transform A function object that takes a const reference to the underlying value and
         returns a new value.
         @param inplace A function object that takes a reference to the underlying value and modifies
@@ -242,13 +283,8 @@ public:
 
         @return A reference to the underlying value.
     */
-    template <class Transform, class Inplace>
+    template <transformation<T> Transform, action<T> Inplace>
     auto write(Transform transform, Inplace inplace) -> element_type& {
-        static_assert(std::is_invocable_r_v<T, Transform, const T&>,
-                      "Transform must be invocable with const T&");
-        static_assert(std::is_invocable_r_v<void, Inplace, T&>,
-                      "Inplace must be invocable with T&");
-
         if (!unique()) {
             *this = copy_on_write(transform(read()));
         } else {
@@ -319,76 +355,35 @@ public:
     /*!
         Comparisons can be done with the underlying value or the copy_on_write object.
     */
-    friend inline auto operator<(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !x.identity(y) && (*x < *y);
-    }
-
-    friend inline auto operator<(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return *x < y;
-    }
-
-    friend inline auto operator<(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return x < *y;
-    }
-
-    friend inline auto operator>(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator>(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator>(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return y < x;
-    }
-
-    friend inline auto operator<=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator<=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator<=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(y < x);
-    }
-
-    friend inline auto operator>=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(x < y);
-    }
-
-    friend inline auto operator>=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(x < y);
-    }
-
-    friend inline auto operator>=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(x < y);
-    }
-
-    friend inline auto operator==(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
+    friend auto operator==(const copy_on_write& x, const copy_on_write& y)
+        noexcept(noexcept(*x == *y))
+        requires std::equality_comparable<T>
+    {
         return x.identity(y) || (*x == *y);
     }
 
-    friend inline auto operator==(const copy_on_write& x, const element_type& y) noexcept -> bool {
+    friend auto operator==(const copy_on_write& x, const element_type& y)
+        noexcept(noexcept(*x == y))
+        requires std::equality_comparable<T>
+    {
         return *x == y;
     }
 
-    friend inline auto operator==(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return x == *y;
+    friend auto operator<=>(copy_on_write const& x, copy_on_write const& y)
+        noexcept(noexcept(*x <=> *y))
+        requires std::three_way_comparable<T>
+    {
+        if (x.identity(y)) {
+            return std::strong_ordering::equal;
+        }
+        return *x <=> *y;
     }
 
-    friend inline auto operator!=(const copy_on_write& x, const copy_on_write& y) noexcept -> bool {
-        return !(x == y);
-    }
-
-    friend inline auto operator!=(const copy_on_write& x, const element_type& y) noexcept -> bool {
-        return !(x == y);
-    }
-
-    friend inline auto operator!=(const element_type& x, const copy_on_write& y) noexcept -> bool {
-        return !(x == y);
+    friend auto operator<=>(copy_on_write const& x, element_type const& y)
+        noexcept(noexcept(*x <=> y))
+        requires std::three_way_comparable<T>
+    {
+        return *x <=> y;
     }
     /*! @} */
 };
