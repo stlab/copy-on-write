@@ -9,7 +9,9 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "BUILD_TESTING": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF"
       }
     },
     {
@@ -21,7 +23,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_TESTING": "ON",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF"
       }
     },
     {
@@ -29,74 +32,54 @@
       "displayName": "Documentation Configuration",
       "description": "Configuration for building documentation",
       "binaryDir": "${sourceDir}/build/docs",
-      "inherits": "test",
+      "generator": "Ninja",
       "cacheVariables": {
-        "BUILD_DOCS": "ON"
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "OFF",
+        "BUILD_DOCS": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF"
       }
     },
     {
-      "name": "test-asan",
-      "displayName": "Test Configuration with ASan",
-      "description": "Configuration for building and running tests with AddressSanitizer",
-      "inherits": "test",
+      "name": "clang-tidy",
+      "displayName": "Clang-Tidy Configuration",
+      "description": "Configuration for running clang-tidy static analysis",
+      "binaryDir": "${sourceDir}/build/clang-tidy",
+      "generator": "Ninja",
       "cacheVariables": {
-        "ENABLE_ASAN": "ON"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy"
+      }
+    },
+    {
+      "name": "init",
+      "displayName": "Initialize Templates",
+      "description": "Force regeneration of template files (CMakePresets.json, CI, etc.)",
+      "binaryDir": "${sourceDir}/build/init",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CPP_LIBRARY_FORCE_INIT": "ON"
       }
     }
   ],
   "buildPresets": [
-    {
-      "name": "default",
-      "displayName": "Default Build",
-      "description": "Build the library with default configuration",
-      "configurePreset": "default"
-    },
-    {
-      "name": "test",
-      "displayName": "Build Tests",
-      "description": "Build the library and all tests",
-      "configurePreset": "test"
-    },
-    {
-      "name": "docs",
-      "displayName": "Build Documentation",
-      "description": "Build the documentation",
-      "configurePreset": "docs",
-      "targets": ["docs"]
-    },
-    {
-      "name": "test-asan",
-      "displayName": "Build Tests with ASan",
-      "description": "Build the library and all tests with AddressSanitizer",
-      "configurePreset": "test-asan"
-    }
+    { "name": "default", "displayName": "Default Build", "configurePreset": "default" },
+    { "name": "test", "displayName": "Build Tests", "configurePreset": "test" },
+    { "name": "docs", "displayName": "Build Docs", "configurePreset": "docs", "targets": "docs" },
+    { "name": "clang-tidy", "displayName": "Build with Clang-Tidy", "configurePreset": "clang-tidy" },
+    { "name": "init", "displayName": "Initialize Templates", "configurePreset": "init" }
   ],
   "testPresets": [
-    {
-      "name": "test",
-      "displayName": "Run All Tests",
-      "description": "Run all unit tests",
-      "configurePreset": "test",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "stopOnFailure": false
-      }
-    },
-    {
-      "name": "test-asan",
-      "displayName": "Run All Tests with ASan",
-      "description": "Run all unit tests with AddressSanitizer",
-      "configurePreset": "test-asan",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "stopOnFailure": true
-      }
-    }
+    { "name": "test", "displayName": "Run All Tests", "configurePreset": "test", "output": { "outputOnFailure": true } },
+    { "name": "clang-tidy", "displayName": "Run Tests with Clang-Tidy", "configurePreset": "clang-tidy", "output": { "outputOnFailure": true } },
+    { "name": "init", "displayName": "Initialize Templates", "configurePreset": "init", "output": { "outputOnFailure": true } }
   ]
 }

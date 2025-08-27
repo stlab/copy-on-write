@@ -55,7 +55,7 @@
     This example demonstrates the core functionality including efficient copying,
     copy-on-write semantics, identity checking, and swap operations.
 
-    @include basic_usage.cpp
+    @include basic_usage_test.cpp
 
     @section license_sec License
 
@@ -63,7 +63,7 @@
 */
 
 /*!
-    @example basic_usage.cpp
+    @example basic_usage_test.cpp
 
     This example demonstrates the core functionality of stlab::copy_on_write including:
     - Efficient copying through shared data
@@ -85,6 +85,9 @@
 
 /**************************************************************************************************/
 
+/*!
+    The stlab namespace contains utilities and components for modern C++ development.
+*/
 namespace stlab {
 
 /**************************************************************************************************/
@@ -105,8 +108,8 @@ class copy_on_write {
         model() noexcept(std::is_nothrow_constructible_v<T>) = default;
 
         template <class... Args>
-        explicit model(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>)
-            : _value(std::forward<Args>(args)...) {}
+        explicit model(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) :
+            _value(std::forward<Args>(args)...) {}
 
         T _value;
     };
@@ -156,8 +159,8 @@ public:
         Constructs a new instance by forwarding multiple arguments to the wrapped value constructor.
     */
     template <class U, class V, class... Args>
-    copy_on_write(U&& x, V&& y, Args&&... args)
-        : _self(new model(std::forward<U>(x), std::forward<V>(y), std::forward<Args>(args)...)) {}
+    copy_on_write(U&& x, V&& y, Args&&... args) :
+        _self(new model(std::forward<U>(x), std::forward<V>(y), std::forward<Args>(args)...)) {}
 
     /*!
         Copy constructor that shares the underlying data with the source object.
